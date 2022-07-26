@@ -9,10 +9,39 @@ notes.get('/notes', (req, res) => {
     readFromFile('./db/db.json').then((data) => res.json(JSON.parse(data)))
 })
 
+
+notes.get('/:id', (req, res) => {
+    const noteId = req.params.id;
+    readFromFile('./db/db.json')
+        .then((data) => JSON.parse(data))
+        .then((json) => {
+            const result = json.filter((note) => note.id === noteId);
+            return result.length > 0
+                ? res.json(result)
+                : res.json('No note with that ID');
+        });
+});
+
+notes.delete('/notes/:id', (req, res) => {
+    const noteId = req.params.id;
+    readFromFile('./db/db.json')
+        .then((data) => JSON.parse(data))
+        .then((json) => {
+            const result = json.filter((note) => note.id !== noteId);
+            fs.writeFile('./db/db.json', JSON.stringify(result), (err) => {
+                if (err){
+                    throw (err)
+                }
+            } );
+            res.json(`Item ${noteId} has been deleted`);
+        });
+});
+
+
 notes.post('/notes', (req, res) => {
     const { title, text } = req.body;
 
-    if( title && text ) {
+    if (title && text) {
         const newNote = {
             title,
             text,
